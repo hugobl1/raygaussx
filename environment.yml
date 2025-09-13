@@ -1,0 +1,21 @@
+name: raygaussx
+channels:
+  - conda-forge
+  - anaconda
+dependencies:
+  - python=3.11
+  - pip
+  - omegaconf
+  - tqdm
+  - imageio
+  - scikit-image
+  - plyfile
+  - matplotlib
+  - tensorboard
+  - libstdcxx-ng>=14
+  - libgcc-ng>=14
+  - pip:
+      - python-optix
+      - glfw
+      - imgui
+      - PyOpenGL
