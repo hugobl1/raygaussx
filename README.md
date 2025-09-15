@@ -124,6 +124,10 @@ Please download and unzip the following datasets, then place them in the `datase
 <!-- #### Trained Models
 
 If you would like to directly visualize a model trained by RayGaussX, we provide the trained point clouds for each scene in Mip-NeRF 360. In this case, you can skip the training of the scene and evaluate or visualize it directly: [Download Link](https://drive.google.com/file/d/1E0_Tg2QeMx2kyohPhfRtfV656oQFQ2Kv/view?usp=sharing). -->
+#### Pretrained Models (Mip-NeRF 360)
+
+If you want to **skip training** and directly evaluate or visualize, we provide pretrained checkpoints for each Mip-NeRF 360 scene:  
+**[Download](https://cloud.minesparis.psl.eu/index.php/s/27MuT7O0LwYW7Ta)**
 
 # Training and Evaluation
 To reproduce the results on entire datasets, follow the instructions below:
@@ -141,6 +145,23 @@ To reproduce the results on entire datasets, follow the instructions below:
 
 This will start the training and evaluation on the NeRF-Synthetic dataset with the configuration parameter in `nerf_synthetic.yml`.
 
+<details>
+<summary><b><u> 📊 RayGaussX Results Produced on RTX 5090</u></b></summary>
+
+| NeRF-Synthetic    | PSNR  | SSIM  | LPIPS | Train (s) | FPS |
+|------------|-------|-------|-------|---------------|-----|
+| Chair      | 37,21 | 0,990 | 0,009 | 736,6         | 141 |
+| Drums      | 27,13 | 0,960 | 0,030 | 851,4         | 105 |
+| Ficus      | 35,09 | 0,988 | 0,011 | 501,5         | 208 |
+| Hotdog     | 38,48 | 0,988 | 0,015 | 610,5         | 182 |
+| Lego       | 37,02 | 0,986 | 0,012 | 585,8         | 202 |
+| Materials  | 31,33 | 0,969 | 0,027 | 614,8         | 169 |
+| Mic        | 38,02 | 0,995 | 0,004 | 645,8         | 139 |
+| Ship       | 32,15 | 0,914 | 0,088 | 1027,4        | 81  |
+| **Average**   | **34,55** | **0,974** | **0,024** | **696,7** | **140** |
+
+</details>
+
 ---
 
 ### Synthetic-NSVF Dataset
@@ -153,6 +174,23 @@ This will start the training and evaluation on the NeRF-Synthetic dataset with t
     ```
 
 This will start the training and evaluation on the Synthetic-NSVF dataset with the configuration parameter in `nerf_synthetic.yml`.
+
+<details>
+  <summary><b><u> 📊 RayGaussX Results Produced on RTX 5090</u></b></summary>
+
+| Scene      | PSNR  | SSIM  | LPIPS | Training Time | FPS |
+|------------|-------|-------|-------|---------------|-----|
+| Bike       | 41,39 | 0,996 | 0,003 | 864,8         | 107 |
+| Lifestyle  | 36,33 | 0,984 | 0,019 | 1188,8        | 77  |
+| Palace     | 40,41 | 0,989 | 0,009 | 1278,6        | 81  |
+| Robot      | 40,13 | 0,996 | 0,006 | 1096,9        | 77  |
+| Spaceship  | 40,12 | 0,995 | 0,006 | 824,7         | 115 |
+| Steamtrain | 39,10 | 0,995 | 0,006 | 1135,8        | 79  |
+| Toad       | 38,40 | 0,989 | 0,011 | 2115,1        | 42  |
+| Wineholder | 34,02 | 0,981 | 0,017 | 1697,4        | 50  |
+| **Average**| **38,74** | **0,990** | **0,010** | **1275,3** | **78** |
+
+</details>
 
 ---
 
@@ -167,6 +205,25 @@ To reproduce results on the **Mip-NeRF 360** dataset:
    python main_train_mipnerf360.py
     ```
 
+<details>
+  <summary><b><u> 📊 RayGaussX Results Produced on RTX 5090</u></b></summary>
+
+| Scene    | PSNR  | SSIM  | LPIPS | Training Time | FPS |
+|----------|-------|-------|-------|---------------|-----|
+| Bicycle  | 25,79 | 0,798 | 0,174 | 3276,0        | 32  |
+| Bonsai   | 34,07 | 0,958 | 0,154 | 2036,9        | 45  |
+| Counter  | 30,68 | 0,932 | 0,156 | 2287,0        | 42  |
+| Flowers  | 22,18 | 0,652 | 0,288 | 3040,9        | 34  |
+| Garden   | 28,26 | 0,886 | 0,089 | 2614,6        | 45  |
+| Kitchen  | 32,84 | 0,941 | 0,103 | 2754,1        | 34  |
+| Room     | 31,97 | 0,937 | 0,173 | 1740,2        | 54  |
+| Stump    | 26,58 | 0,785 | 0,201 | 2572,6        | 40  |
+| Treehill | 23,08 | 0,675 | 0,261 | 2839,7        | 37  |
+| **Average** | **28,38** | **0,840** | **0,178** | **2573,5** | **40** |
+
+</details>
+
+
 ---
 
 ### Deep Blending Dataset
@@ -178,6 +235,18 @@ To reproduce results on the **Deep Blending** dataset:
    ```bash
    python main_train_db.py
 
+<details>
+  <summary><b><u> 📊 RayGaussX Results Produced on RTX 5090</u></b></summary>
+
+| Scene      | PSNR  | SSIM  | LPIPS | Training Time | FPS |
+|------------|-------|-------|-------|---------------|-----|
+| Drjohnson  | 29,85 | 0,909 | 0,244 | 1781,7        | 55  |
+| Playroom   | 30,78 | 0,910 | 0,245 | 1218,5        | 87  |
+| **Average**| **30,32** | **0,909** | **0,245** | **1500,1** | **71** |
+
+</details>
+
+
 ---
 
 ### Tanks&Temples Dataset
@@ -188,6 +257,17 @@ To reproduce results on the **Tanks&Temples** dataset:
 2. **Run Training Script**: Execute the following command:
    ```bash
    python main_train_tandt.py
+
+<details>
+  <summary><b><u> 📊 RayGaussX Results Produced on RTX 5090</u></b></summary>
+
+| Scene   | PSNR  | SSIM  | LPIPS | Training Time | FPS |
+|---------|-------|-------|-------|---------------|-----|
+| Train   | 22,28 | 0,833 | 0,182 | 1665,1        | 54  |
+| Truck   | 25,07 | 0,891 | 0,119 | 1492,2        | 72  |
+| **Average** | **23,67** | **0,862** | **0,150** | **1578,7** | **62** |
+
+</details>
 
 ---
 

@@ -116,7 +116,8 @@ if __name__ == "__main__":
         level=logging.INFO,
         handlers=[
             file_handler
-        ]
+        ],
+        force=True
     )
     psnr_test,ssim_test,lpips_test,fps_test=train(config,quiet=True)
     mean_psnr_over_iter.append(psnr_test)
@@ -139,10 +140,30 @@ if __name__ == "__main__":
     config.save.models=os.path.join(timestamped_dir_scene_to_train, config_save_models)
     config.save.screenshots=os.path.join(timestamped_dir_scene_to_train, config_save_screenshots)
     config.save.metrics=os.path.join(timestamped_dir_scene_to_train, config_save_metrics)
+    config.save.logs=os.path.join(timestamped_dir_scene_to_train,config_save_logs)
+    config.save.tensorboard_logs=os.path.join(timestamped_dir_scene_to_train,config_save_tensorboard_logs)
     os.makedirs(config.save.models,exist_ok=True)
     os.makedirs(os.path.join(config.save.screenshots,"train"),exist_ok=True)
     os.makedirs(os.path.join(config.save.screenshots,"test"),exist_ok=True)
     os.makedirs(config.save.metrics,exist_ok=True)
+    os.makedirs(config.save.tensorboard_logs,exist_ok=True)
+    os.makedirs(os.path.join(timestamped_dir_scene_to_train,"config"),exist_ok=True)
+    #Save the modified config file
+    OmegaConf.save(config,os.path.join(timestamped_dir_scene_to_train,"config","config.yml"))
+
+    file_handler = logging.FileHandler(config.save.logs, encoding="utf-8")
+    file_handler.setFormatter(logging.Formatter(
+        fmt="%(asctime)s | %(levelname)-7s | %(name)-21s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    ))
+
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=[
+            file_handler
+        ],
+        force=True
+    )
     psnr_test,ssim_test,lpips_test,fps_test=train(config,quiet=True)
     mean_psnr_over_iter.append(psnr_test)
     mean_ssim_over_iter.append(ssim_test)

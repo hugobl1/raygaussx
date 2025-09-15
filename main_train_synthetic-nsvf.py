@@ -112,7 +112,8 @@ if __name__ == "__main__":
         level=logging.INFO,
         handlers=[
             file_handler
-        ]
+        ],
+        force=True
     )
     psnr_test,ssim_test,lpips_test,fps_test=train(config,quiet=True)
     mean_psnr_over_iter.append(psnr_test)
