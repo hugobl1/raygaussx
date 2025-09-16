@@ -67,6 +67,9 @@ Then install [Pytorch](https://pytorch.org/get-started/locally/) (choose the ver
   pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu129
   pip3 install submodules/simple-knn/
   pip3 install git+https://github.com/rahul-goel/fused-ssim/ --no-build-isolation
+
+  # Optional — for the GUI (pick version that match your CUDA Toolkit)
+  pip3 install "cuda-python==12.9.0" "cuda-bindings==12.9.0"
   ```
 
 

@@ -10,9 +10,9 @@ from .vecmath import vtype_to_dtype
 
 try:
     import cuda as _cuda
-    from cuda import cudart
+    import cuda.bindings.runtime as cudart
     has_cudart = True
-    has_gl_interop = version.parse(_cuda.__version__) >= version.parse("11.6.0")
+    has_gl_interop = version.parse(_cuda.bindings.__version__) >= version.parse("11.6.0")
 except ImportError:
     cudart = None
     has_cudart = False
