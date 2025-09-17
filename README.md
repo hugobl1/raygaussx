@@ -42,8 +42,17 @@ The following software components are required to ensure compatibility and optim
 - **Anaconda**: Install [Anaconda](https://anaconda.com/download), a distribution that includes Conda, for managing packages and environments efficiently.
 
 
-## Installation on Ubuntu
+## Installation (Ubuntu, Windows)
 
+There are two steps in the installation process:
+1. **OS-specific setup** (Ubuntu or Windows)  
+2. **Common setup** (applies to both Ubuntu & Windows)
+
+---
+
+### 1. OS-specific setup
+
+### Ubuntu:
 Follow the steps below to set up the project:
 
    ```bash
@@ -61,6 +70,24 @@ Follow the steps below to set up the project:
   conda activate raygaussx
   ```
 
+### Windows:
+Follow the steps below to set up the project:
+
+   ```bash
+  #Python-Optix requirements
+  set OPTIX_PATH=\path\to\optix
+  #For example, the repo is by default on C disk: set OPTIX_PATH=C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.6.0
+  set OPTIX_EMBED_HEADERS=1 # embed the optix headers into the package
+
+  git clone https://github.com/hugobl1/raygaussx.git
+  cd raygaussx
+  conda env create --file environment_win.yml
+  conda activate raygaussx
+  ```
+
+---
+
+### 2. Common setup (Ubuntu & Windows)
 Then install [Pytorch](https://pytorch.org/get-started/locally/) (choose the version appropriate for your installed CUDA Toolkit), the simple-knn submodule, and [fused-ssim](https://github.com/rahul-goel/fused-ssim), for example for CUDA Toolkit 12.9:
 
    ```bash
@@ -71,47 +98,6 @@ Then install [Pytorch](https://pytorch.org/get-started/locally/) (choose the ver
   # Optional — for the GUI (pick version that match your CUDA Toolkit)
   pip3 install "cuda-python==12.9.0" "cuda-bindings==12.9.0"
   ```
-
-
-## Installation on Windows
-
-Follow the steps below to set up the project:
-
-   ```bash
-  git clone https://github.com/hugobl1/raygaussx.git
-  cd raygaussx
-  ```
-
-You need to install CUDA Toolkit on Windows, if possible **version 12.4**: https://developer.nvidia.com/cuda-12-4-1-download-archive?target_os=Windows&target_arch=x86_64
-
-If you already have a CUDA version on your Windows, you need to change the `environment.yml` file to match the CUDA version you installed in Windows. For example, if you have CUDA 11.8:
-  - cuda-toolkit=12.4 -> cuda-toolkit=11.8
-  - pytorch-cuda=12.4 -> pytorch-cuda=11.8
-
-Comment the line python-optix in the `environment.yml` file (python-optix needs to be installed from source on Windows)
-   - python-optix  ->  #python-optix
-
-Now, you can create the ray_gauss conda env:
- ```bash
-conda env create --file environment.yml
-conda activate ray_gauss
-```
-
-Install python-optix from source:
- ```bash
-git clone https://github.com/mortacious/python-optix
-cd python-optix
-set OPTIX_PATH=\path\to\optix
-#For example, the repo is by default on C disk: set OPTIX_PATH=C:\ProgramData\NVIDIA Corporation\OptiX SDK 7.6.0
-set OPTIX_EMBED_HEADERS=1 # embed the optix headers into the package
-pip install .
-```
-
-You can now train your own model:
- ```bash
-cd..
-python main_train.py
-```
 
 # Datasets
 
@@ -311,7 +297,7 @@ To extract a point cloud in PLY format from a trained scene, we provide the scri
 
 The generated PLY point cloud will be located in the folder `./output/scene/saved_pc/`.
 
-# Visualization
+# Visualization (Ubuntu only)
 To visualize a trained scene, we provide the script [main_gui.py](main_gui.py), which opens a GUI to display the trained scene:
 
    ```bash
