@@ -907,21 +907,10 @@ class PointCloud:
   def densify_and_prune(self, max_grad, min_density, extent, cameras):
     grads = self.xyz_gradient_accum_norm / self.num_accum
     grads[grads.isnan()] = 0.0
-    # focal_length = 0.
-    # for camera in cameras:
-    #   focal_x = fov2focal(camera.FoVx,camera.image_width)
-    #   focal_y = fov2focal(camera.FoVy,camera.image_height)
-    #   if focal_length < focal_x:
-    #       focal_length = focal_x
-    #   if focal_length < focal_y:
-    #       focal_length = focal_y
-    # distances_to_cam = torch.exp(self.filter_3D)*focal_length/0.5
-    # new_factor_grad = torch.clamp(distances_to_cam.flatten()/5.0,min=1,max=100)
-    # grads = grads*new_factor_grad
 
     logger.info("Moyenne des gradients : %.4f", torch.mean(grads).item())
 
-    NB_MAX_PRIMITIVES = 6000000 #5000000 in ICCV
+    NB_MAX_PRIMITIVES = 6000000
     if len(self.positions) <= NB_MAX_PRIMITIVES:
       self.densify_and_clone(grads, max_grad, extent)
       self.densify_and_split(grads, max_grad, extent)
