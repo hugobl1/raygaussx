@@ -113,10 +113,17 @@ Please download and unzip the following datasets, then place them in the `datase
 <!-- #### Trained Models
 
 If you would like to directly visualize a model trained by RayGaussX, we provide the trained point clouds for each scene in Mip-NeRF 360. In this case, you can skip the training of the scene and evaluate or visualize it directly: [Download Link](https://drive.google.com/file/d/1E0_Tg2QeMx2kyohPhfRtfV656oQFQ2Kv/view?usp=sharing). -->
-#### Pretrained Models (Mip-NeRF 360)
+### Pretrained Models
 
-If you want to **skip training** and directly evaluate or visualize, we provide pretrained checkpoints for each Mip-NeRF 360 scene:  
-**[Download](https://cloud.minesparis.psl.eu/index.php/s/27MuT7O0LwYW7Ta)**
+If you want to **skip training** and run evaluation or visualization directly, we provide pretrained checkpoints for every scene in each dataset:
+| Dataset                        | Download Link   |
+|--------------------------------|-----------------|
+| Synthetic-NSVF                 | [download](https://cloud.minesparis.psl.eu/index.php/s/dLMtUQaVBYfaPLU) |
+| Synthetic-NeRF                 | [download](https://cloud.minesparis.psl.eu/index.php/s/5J7RZ0dXCK2J1AN) |
+| Deep Blending                  | [download](https://cloud.minesparis.psl.eu/index.php/s/bNy2nh2CKPzEVUW) |
+| Tanks&Temples                  | [download](https://cloud.minesparis.psl.eu/index.php/s/ukbgWSKh2aMgdbL) |
+| Mip-NeRF 360                   | [download](https://cloud.minesparis.psl.eu/index.php/s/27MuT7O0LwYW7Ta) |
+
 
 # Training and Evaluation
 To reproduce the results on entire datasets, follow the instructions below:
