@@ -198,7 +198,7 @@ def create_context(log):
     ctx.cache_enabled = False
     return ctx
 
-def create_module(ctx, pipeline_opts,stage):
+def create_module(ctx, pipeline_opts,stage,debug_level=ox.CompileDebugLevel.DEFAULT,opt_level=ox.CompileOptimizationLevel.DEFAULT):
     script_dir = os.path.dirname(__file__)
     if stage=="forward":
         cuda_src = os.path.join(script_dir, "cuda_train/forward", "gaussians_aabb.cu")
@@ -210,7 +210,7 @@ def create_module(ctx, pipeline_opts,stage):
         cuda_src = os.path.join(script_dir, "cuda_gui", "gaussians_aabb.cu")
     else:
         raise ValueError("stage must be 'forward', 'backward', 'test' or 'gui'")
-    compile_opts = ox.ModuleCompileOptions(debug_level=ox.CompileDebugLevel.DEFAULT , opt_level=ox.CompileOptimizationLevel.DEFAULT )
+    compile_opts = ox.ModuleCompileOptions(debug_level=debug_level , opt_level=opt_level)
     module = ox.Module(ctx, cuda_src, compile_opts, pipeline_opts)
     return module
 
@@ -250,27 +250,13 @@ def create_pipeline(ctx, program_grps, pipeline_options,debug_level=ox.CompileDe
                                  0)  # max_dc_depth
     return pipeline
 
-def create_sbt_train(program_grps, positions,scales,quaternions):
-    raygen_grp, miss_grp, hit_grp = program_grps
-
-    raygen_sbt = ox.SbtRecord(raygen_grp)
-    miss_sbt = ox.SbtRecord(miss_grp)
-    hit_sbt = ox.SbtRecord(hit_grp, names=('positions','scales','quaternions'), formats=('u8','u8','u8'))
-    hit_sbt['positions'] = positions.data.ptr
-    hit_sbt['scales'] = scales.data.ptr
-    hit_sbt['quaternions'] = quaternions.data.ptr
-    sbt = ox.ShaderBindingTable(raygen_record=raygen_sbt, miss_records=miss_sbt, hitgroup_records=hit_sbt)
-    return sbt
-
-def create_sbt(program_grps, positions,scales,quaternions):
+def create_sbt(program_grps):
     raygen_grp, miss_grp, hit_grp = program_grps[0], program_grps[1:3], program_grps[3:]
 
     raygen_sbt = ox.SbtRecord(raygen_grp)
     miss_sbt = ox.SbtRecord(miss_grp)
-    hit_sbt = ox.SbtRecord(hit_grp, names=('positions','scales','quaternions'), formats=('u8','u8','u8'))
-    hit_sbt['positions'] = positions.data.ptr
-    hit_sbt['scales'] = scales.data.ptr
-    hit_sbt['quaternions'] = quaternions.data.ptr
+    hit_sbt=ox.SbtRecord(hit_grp)
+
     sbt = ox.ShaderBindingTable(raygen_record=raygen_sbt, miss_records=miss_sbt, hitgroup_records=hit_sbt)
     return sbt
 

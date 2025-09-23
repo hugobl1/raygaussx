@@ -98,19 +98,15 @@ display     : {display_ms:8.1f} ms
     display_text(display_stats.display_text, 10.0, 10.0)
 
     ############################## Test set Image ########################################
-    # imgui.set_next_window_position(10.0, 150.0)  # Adjust the y position as needed
-    # imgui.set_next_window_size(300, (180+60+40))  # Ensure window has a size
     flag = imgui.WINDOW_ALWAYS_AUTO_RESIZE
     imgui.begin("Menu", False, flag)
-    # imgui.begin("Test-Train set Image", False, imgui.WINDOW_NO_RESIZE)
-    #Create a child window to choose the iteration
 
     state.is_window_focused = imgui.is_window_focused() 
     ############################  Sous-menu 1 #############################################
     ############################  Choix de l'itération ####################################
     if state.gui_mode:
         sub_menu_train_iteration_expanded = True
-        sub_menu_train_iteration_expanded, _ = imgui.collapsing_header("Itération durant l'entraînement", sub_menu_train_iteration_expanded)
+        sub_menu_train_iteration_expanded, _ = imgui.collapsing_header("Training checkpoint", sub_menu_train_iteration_expanded)
         if sub_menu_train_iteration_expanded:
             imgui.begin_child("Choose iteration", 280, 60, border=True)
             imgui.text("Choose iteration")
@@ -126,7 +122,7 @@ display     : {display_ms:8.1f} ms
     ################  Comparaison avec l'ensemble d'entraînement/test #####################
     if state.gui_mode:
         sub_menu_train_test_idx_expanded = True
-        sub_menu_train_test_idx_expanded, _ = imgui.collapsing_header("Comparaison avec Train/Test set", sub_menu_train_test_idx_expanded)
+        sub_menu_train_test_idx_expanded, _ = imgui.collapsing_header("Comparison with Train/Test set", sub_menu_train_test_idx_expanded)
         if sub_menu_train_test_idx_expanded:
             imgui.begin_child("Test-train set Image", 280, 180, border=True)
             imgui.text("Test set Image")
@@ -197,7 +193,7 @@ display     : {display_ms:8.1f} ms
         imgui.begin_child("Spherical Harmonics Degree", 280, 50, border=True)
         #Slider for the spherical harmonics degree
         imgui.text("Spherical Harmonics Degree")
-        changed, state.params.degree_sh = imgui.slider_int("", state.params.degree_sh, 0, state.params.max_sh_degree)
+        changed_sh, state.pre_ctx.degree_sh = imgui.slider_int("", state.pre_ctx.degree_sh, 0, state.pre_ctx.max_sh_degree)
         if imgui.is_item_active():
             state.which_item = 6
         state.is_window_focused = imgui.is_window_focused() or state.is_window_focused
@@ -206,14 +202,40 @@ display     : {display_ms:8.1f} ms
         imgui.begin_child("Number of Spherical Gaussians", 280, 50, border=True)
         #Slider for the number of spherical gaussians
         imgui.text("Number of Spherical Gaussians")
-        changed, state.params.num_sg = imgui.slider_int("", state.params.num_sg, 0, state.params.max_sg_display)
-        update_rgb(state.params)
+        changed_sg, state.pre_ctx.num_sg = imgui.slider_int("", state.pre_ctx.num_sg, 0, state.pre_ctx.max_sg_display)
+        if changed_sg or changed_sh:
+            update_rgb(state)
         if imgui.is_item_active():
             state.which_item = 11
         state.is_window_focused = imgui.is_window_focused() or state.is_window_focused
         imgui.end_child()
 
-    state.is_window_focused = state.is_window_focused  or imgui.is_window_focused()  
+    state.is_window_focused = state.is_window_focused  or imgui.is_window_focused()
+
+    ############################  Sous-menu (Sampling) ##################################
+    sub_menu_sampling_expanded = True
+    sub_menu_sampling_expanded, _ = imgui.collapsing_header("Sampling", sub_menu_sampling_expanded)
+    if sub_menu_sampling_expanded:
+        imgui.begin_child("Sampling controls", 280, 80, border=True)
+
+        # Slider pour dt_step
+        imgui.text("Base sampling step (dt_step)")
+        changed_dt, new_dt = imgui.slider_float("##dt_step", float(state.params.dt_step), 0.0005, 0.05, "%.6f")
+        if changed_dt:
+            state.params.dt_step = np.float32(new_dt)
+
+        # Toggle dynamic_sampling
+        changed_dyn, dyn_val = imgui.checkbox("Dynamic sampling", bool(state.params.dynamic_sampling))
+        if changed_dyn:
+            state.params.dynamic_sampling = 1 if dyn_val else 0
+
+        if imgui.is_item_active():
+            state.which_item = 12
+
+        state.is_window_focused = imgui.is_window_focused() or state.is_window_focused
+        imgui.end_child()
+    ######################################################################################
+
 
     ##############################################################################
 
@@ -245,7 +267,7 @@ display     : {display_ms:8.1f} ms
     ############################  Sous-menu 5 #############################################
     ##################  Choix de la caméra: First person ou Trackball ####################
     sub_menu_camera_expanded = True
-    sub_menu_camera_expanded, _ = imgui.collapsing_header("Choix de la caméra", sub_menu_camera_expanded)
+    sub_menu_camera_expanded, _ = imgui.collapsing_header("Camera choice", sub_menu_camera_expanded)
     if sub_menu_camera_expanded:
         imgui.begin_child("Camera choice", 280, 60, border=True)
         #Radio button to choose the camera
@@ -278,7 +300,7 @@ display     : {display_ms:8.1f} ms
     ############################  Sous-menu 6 #############################################
     ##################  Affichage de la profondeur ####################################
     sub_menu_depth_expanded = True
-    sub_menu_depth_expanded, _ = imgui.collapsing_header("Affichage de la profondeur", sub_menu_depth_expanded)
+    sub_menu_depth_expanded, _ = imgui.collapsing_header("Depth display", sub_menu_depth_expanded)
     if sub_menu_depth_expanded:
         imgui.begin_child("Depth display", 280, 50, border=True)
         if state.print_depth:

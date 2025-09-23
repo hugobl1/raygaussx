@@ -6,6 +6,8 @@ from PIL import Image
 import glfw
 from gui_utils.cupy_gui_util import abs_diff_kernel, copy_kernel, copy_normalize_depth_kernel
 
+SIGMA_THRESHOLD=u_ox.SIGMA_THRESHOLD
+
 from torch.utils.dlpack import to_dlpack
 with open('optix_raycasting/cuda_train/forward/vec_math.h') as f:
     code = f.read()
@@ -30,12 +32,15 @@ def compute_cupy_rgb(camera_center,cupy_positions,cupy_color_features,
                       degree_sh,num_points,max_num_sh,max_sg_display,cp_colors_rgb))
     return cp_colors_rgb
 
-def update_rgb(params):
-    params.rgb=compute_cupy_rgb(params.eye,params.positions,params.color_features,
-                    params.sph_gauss_features,params.bandwidth_sharpness,
-                    params.lobe_axis,params.num_sg,
-                    params.degree_sh,params.num_prim,
-                    params.max_sh_degree,params.max_sg_display)
+def update_rgb(state):
+    params = state.params
+    pre_ctx=state.pre_ctx
+    rgb=compute_cupy_rgb(params.eye,pre_ctx.positions,pre_ctx.color_features,
+                    pre_ctx.sph_gauss_features,pre_ctx.bandwidth_sharpness,
+                    pre_ctx.lobe_axis,pre_ctx.num_sg,
+                    pre_ctx.degree_sh,params.num_prim,
+                    pre_ctx.max_sh_degree,pre_ctx.max_sg_display)
+    state.prims[:,12:15]=rgb*state.prims[:,15:16] #Multiply by density
 
 #------------------------------------------------------------------------------
 # Helper functions
@@ -47,21 +52,7 @@ def init_launch_params(state):
 def handle_gaussians_update(state):
     closest_iteration= min(state.available_iterations, key=lambda x:abs(x-state.slider_train_iteration))
     if not state.current_iteration == closest_iteration:
-        #Get closest iteration in available_iterations
-        #Get the corresponding tensors
-        # folder_tensors=config.pointcloud.pointcloud_storage
-        # folder_tensors=os.path.join(args.output,"model")
-        # name_densities="densities_iter"+str(closest_iteration)
-        # name_scales="scales_iter"+str(closest_iteration)
-        # name_quaternions="quaternions_iter"+str(closest_iteration)
-        # name_positions="positions_iter"+str(closest_iteration)
-        # name_spherical_harmonics="spherical_harmonics_iter"+str(closest_iteration)
-        # pointcloud.load_from_pt(name_positions="positions",name_spherical_harmonics="spherical_harmonics",name_densities="densities", name_scales="scales", name_quaternions="quaternions",
-        #            folder_tensors="saved_tensors")
-        # pointcloud.load_from_pt(name_positions=name_positions,name_spherical_harmonics=name_spherical_harmonics,name_densities=name_densities, name_scales=name_scales, name_quaternions=name_quaternions,
-        #              folder_tensors=folder_tensors)
         state.pointcloud.restore_model(iteration=closest_iteration,checkpoint_folder=state.path_available_iterations)
-        # positions,scales,normalized_quaternions,densities,color_features=pointcloud.get_data()
         positions,scales,normalized_quaternions,densities,color_features,sph_gauss_features,bandwidth_sharpness,lobe_axis=state.pointcloud.get_data()
 
         if state.show_added_gaussians:
@@ -75,17 +66,10 @@ def handle_gaussians_update(state):
             bandwidth_sharpness=bandwidth_sharpness[iter_added_gaussians]
             lobe_axis=lobe_axis[iter_added_gaussians]
 
-        state.params.degree_sh = int(np.sqrt(color_features.shape[2]).item()-1)
-        state.params.max_sh_degree = state.params.degree_sh
-        state.params.num_sg=sph_gauss_features.shape[2]
-        state.params.max_sg_display=state.params.num_sg
-        # cp_densities,cp_scales,cp_quaternions,cp_positions,cp_color_features=utilities.torch2cupy(
-        #             densities,
-        #             scales,
-        #             normalized_quaternions,
-        #             positions,
-        #             color_features.reshape(-1))
-        
+        state.pre_ctx.degree_sh = int(np.sqrt(color_features.shape[2]).item()-1)
+        state.pre_ctx.max_sh_degree = state.pre_ctx.degree_sh
+        state.pre_ctx.num_sg=sph_gauss_features.shape[2]
+        state.pre_ctx.max_sg_display=state.pre_ctx.num_sg
         cp_positions,cp_scales,cp_quaternions,cp_densities,cp_color_features,cp_sph_gauss_features,cp_bandwidth_sharpness,cp_lobe_axis=utilities.torch2cupy(
                     positions,
                     scales,
@@ -95,34 +79,50 @@ def handle_gaussians_update(state):
                     sph_gauss_features.reshape(-1),
                     bandwidth_sharpness.reshape(-1),
                     lobe_axis.reshape(-1))
+        cp_bboxes, bb_min, bb_max = u_ox.ellipsoids_bbox_from_quat(cp_quaternions,cp_positions,cp_scales,cp_densities)
 
-        L1,L2,L3=u_ox.quaternion_to_rotation(cp_quaternions)
-        cp_bboxes = u_ox.compute_ellipsoids_bbox(cp_positions,cp_scales,L1,L2,L3,cp_densities)
-        if (cp_bboxes.shape[0] == 0):
-            bb_min=cp.array([0,0,0],dtype=cp.float32)
-            bb_max=cp.array([0,0,0],dtype=cp.float32)
-        else:
-            bb_min=cp_bboxes[:,:3].min(axis=0)
-            bb_max=cp_bboxes[:,3:].max(axis=0)
         state.current_iteration = closest_iteration
-        state.params.bbox_min = bb_min.get()
-        state.params.bbox_max = bb_max.get()
-        state.params.densities = cp_densities.data.ptr
-        state.params.color_features = cp_color_features.data.ptr
-        state.params.sph_gauss_features = cp_sph_gauss_features.data.ptr
-        state.params.bandwidth_sharpness = cp_bandwidth_sharpness.data.ptr
-        state.params.lobe_axis = cp_lobe_axis.data.ptr
-        state.params.positions = cp_positions.data.ptr
-        state.params.scales = cp_scales.data.ptr
-        state.params.quaternions = cp_quaternions.data.ptr
+        params=state.params
+        pre_ctx=state.pre_ctx
+        params.bbox_min = bb_min.get()
+        params.bbox_max = bb_max.get()
+        pre_ctx.color_features = cp_color_features
+        pre_ctx.sph_gauss_features = cp_sph_gauss_features
+        pre_ctx.bandwidth_sharpness = cp_bandwidth_sharpness
+        pre_ctx.lobe_axis = cp_lobe_axis
+        pre_ctx.positions = cp_positions
+        num_prim=cp_positions.shape[0]
+        params.num_prim = np.uint32(num_prim)
+        inv_scales = cp.reciprocal(cp_scales)                   # (N,3)
+        k = cp.sqrt(2.0 * cp.log(cp_densities/ SIGMA_THRESHOLD))
+        inv_scales_intersect = inv_scales / k[:,None]
+        inv_scales_intersect4 = cp.empty((num_prim, 4), dtype=cp.float32)
+        inv_scales_intersect4[:, :3] = inv_scales_intersect
+        inv_scales_intersect4[:,  3] = k
+        rgb=compute_cupy_rgb(params.eye,pre_ctx.positions,pre_ctx.color_features,
+                    pre_ctx.sph_gauss_features,pre_ctx.bandwidth_sharpness,
+                    pre_ctx.lobe_axis,pre_ctx.num_sg,
+                    pre_ctx.degree_sh,params.num_prim,
+                    pre_ctx.max_sh_degree,pre_ctx.max_sg_display)
+        rgba4=cp.empty((num_prim,4),dtype=cp.float32)
+        rgba4[:, :3]=rgb*cp_densities[:,None]
+        rgba4[:,3]=cp_densities
+        prims=cp.zeros((num_prim,16),dtype=cp.float32)
+        # prims[:, :3]=cp.array(params.eye)-pre_ctx.positions    # pos4
+        prims[:,  0: 3] = cp.array(params.eye) - pre_ctx.positions
+        # prims[:,  3]    = 0.0   
+        prims[:,  4: 8] = inv_scales_intersect4            # inv_inter4
+        prims[:,  8:12] = cp_quaternions            # quat4
+        prims[:, 12:16] = rgba4                  # rgba4
+        
+        state.prims = cp.ascontiguousarray(prims)
+        state.params.prims = state.prims.data.ptr
 
-
-        # program_grps=(state.raygen_grp, state.miss_grp, state.hit_grp)
         program_grps=state.program_grps
-        state.sbt=u_ox.create_sbt(program_grps=program_grps,positions=cp_positions,scales=cp_scales,quaternions=cp_quaternions)
+        state.sbt=u_ox.create_sbt(program_grps=program_grps)
+        # state.bboxes=cp_bboxes
         state.gas=u_ox.create_acceleration_structure(state.ctx,cp_bboxes)
         state.params.trav_handle = state.gas.handle
-        # build_bvh(state,cp_bboxes)
 
 def handle_test_train_update(state):
     if (state.update_train_im):
@@ -143,13 +143,16 @@ def handle_test_train_update(state):
         ##############################################
         # state.camera_changed = True
         params = state.params
+        pre_ctx=state.pre_ctx
         camera.aspect_ratio = params.width / float(params.height)
         params.eye = camera.eye
-        params.rgb=compute_cupy_rgb(params.eye,params.positions,params.color_features,
-                          params.sph_gauss_features,params.bandwidth_sharpness,
-                          params.lobe_axis,params.num_sg,
-                          params.degree_sh,params.num_prim,
-                          params.max_sh_degree,params.max_sg_display)
+        rgb=compute_cupy_rgb(params.eye,pre_ctx.positions,pre_ctx.color_features,
+                          pre_ctx.sph_gauss_features,pre_ctx.bandwidth_sharpness,
+                          pre_ctx.lobe_axis,pre_ctx.num_sg,
+                          pre_ctx.degree_sh,params.num_prim,
+                          pre_ctx.max_sh_degree,pre_ctx.max_sg_display)
+        state.prims[:, :3]=cp.array(camera.eye)-pre_ctx.positions
+        state.prims[:,12:15]=rgb*state.prims[:,15:16] #Multiply by density
         u,v,w = camera.uvw_frame()
         params.u = u
         params.v = v
@@ -198,13 +201,16 @@ def handle_test_train_update(state):
         ##############################################
         # state.camera_changed = True
         params = state.params
+        pre_ctx=state.pre_ctx
         camera.aspect_ratio = params.width / float(params.height)
         params.eye = camera.eye
-        params.rgb=compute_cupy_rgb(camera.eye,params.positions,params.color_features,
-                          params.sph_gauss_features,params.bandwidth_sharpness,
-                          params.lobe_axis,params.num_sg,
-                          params.degree_sh,params.num_prim,
-                          params.max_sh_degree,params.max_sg_display)
+        rgb=compute_cupy_rgb(camera.eye,pre_ctx.positions,pre_ctx.color_features,
+                          pre_ctx.sph_gauss_features,pre_ctx.bandwidth_sharpness,
+                          pre_ctx.lobe_axis,pre_ctx.num_sg,
+                          pre_ctx.degree_sh,params.num_prim,
+                          pre_ctx.max_sh_degree,pre_ctx.max_sg_display)
+        state.prims[:, :3]=cp.array(camera.eye)-pre_ctx.positions
+        state.prims[:,12:15]=rgb*state.prims[:,15:16] #Multiply by density
         u,v,w = camera.uvw_frame()
         params.u = u
         params.v = v
@@ -238,6 +244,7 @@ def handle_test_train_update(state):
 
 def handle_added_gaussians_update(state):
     if state.update_added_gaussians:
+        print("Updating added gaussians")
         if state.show_added_gaussians:
             positions,scales,normalized_quaternions,densities,color_features,sph_gauss_features,bandwidth_sharpness,lobe_axis=state.pointcloud.get_data()
             iter_added_gaussians=(state.pointcloud.grown_points>0)*(state.pointcloud.grown_points<=state.added_before_iter)
@@ -246,8 +253,8 @@ def handle_added_gaussians_update(state):
             normalized_quaternions_added_gaussians=normalized_quaternions[iter_added_gaussians]
             densities_added_gaussians=densities[iter_added_gaussians]
             color_features_added_gaussians=color_features[iter_added_gaussians]
-            state.params.degree_sh = int(np.sqrt(color_features.shape[2]).item()-1)
-            state.params.max_sh_degree = state.params.degree_sh
+            state.pre_ctx.degree_sh = int(np.sqrt(color_features.shape[2]).item()-1)
+            state.pre_ctx.max_sh_degree = state.pre_ctx.degree_sh
             cp_densities,cp_scales,cp_quaternions,cp_positions,cp_color_features=utilities.torch2cupy(
                         densities_added_gaussians,
                         scales_added_gaussians,
@@ -267,23 +274,36 @@ def handle_added_gaussians_update(state):
 
             state.params.bbox_min = bb_min.get()
             state.params.bbox_max = bb_max.get()
-            state.params.densities = cp_densities.data.ptr
-            state.params.color_features = cp_color_features.data.ptr
-            state.params.positions = cp_positions.data.ptr
-            state.params.scales = cp_scales.data.ptr
-            state.params.quaternions = cp_quaternions.data.ptr
+            # state.params.densities = cp_densities.data.ptr
+            state.pre_ctx.color_features = cp_color_features
+            state.pre_ctx.positions = cp_positions
+            # state.params.scales = cp_scales.data.ptr
+            # state.params.quaternions = cp_quaternions.data.ptr
+            
+            num_prim=cp_positions.shape[0]
+            inv_scales = cp.reciprocal(scales)                   # (N,3)
+            k = cp.sqrt(2.0 * cp.log(densities/ SIGMA_THRESHOLD))
+            inv_scales_intersect = inv_scales / k[:,None]
+            inv_scales_intersect4 = cp.empty((num_prim, 4), dtype=cp.float32)
+            inv_scales_intersect4[:, :3] = inv_scales_intersect
+            inv_scales_intersect4[:,  3] = k
+
+            state.prims[:,  4: 8] = inv_scales_intersect4            # inv_inter4
+            state.prims[:,  8:12] = cp_quaternions            # quat4
+            state.prims[:, 15:16] = cp_densities            # density4
 
             # program_grps=(state.raygen_grp, state.miss_grp, state.hit_grp)
             program_grps=state.program_grps
-            state.sbt=u_ox.create_sbt(program_grps=program_grps,positions=cp_positions,scales=cp_scales,quaternions=cp_quaternions)
+            state.sbt=u_ox.create_sbt(program_grps=program_grps)
 
             # build_bvh(state,cp_bboxes)
+            # state.bboxes=cp_bboxes
             state.gas=u_ox.create_acceleration_structure(state.ctx,cp_bboxes)
             state.params.trav_handle = state.gas.handle
         else:
             positions,scales,normalized_quaternions,densities,color_features=state.pointcloud.get_data()
-            state.params.degree_sh = int(np.sqrt(color_features.shape[2]).item()-1)
-            state.params.max_sh_degree = state.params.degree_sh
+            state.pre_ctx.degree_sh = int(np.sqrt(color_features.shape[2]).item()-1)
+            state.pre_ctx.max_sh_degree = state.pre_ctx.degree_sh
             cp_densities,cp_scales,cp_quaternions,cp_positions,cp_color_features=utilities.torch2cupy(
                         densities,
                         scales,
@@ -303,17 +323,30 @@ def handle_added_gaussians_update(state):
 
             state.params.bbox_min = bb_min.get()
             state.params.bbox_max = bb_max.get()
-            state.params.densities = cp_densities.data.ptr
-            state.params.color_features = cp_color_features.data.ptr
-            state.params.positions = cp_positions.data.ptr
-            state.params.scales = cp_scales.data.ptr
-            state.params.quaternions = cp_quaternions.data.ptr
+            # state.params.densities = cp_densities.data.ptr
+            state.pre_ctx.color_features = cp_color_features
+            state.pre_ctx.positions = cp_positions
+            # state.params.scales = cp_scales.data.ptr
+            # state.params.quaternions = cp_quaternions.data.ptr
+            
+            num_prim=cp_positions.shape[0]
+            inv_scales = cp.reciprocal(scales)                   # (N,3)
+            k = cp.sqrt(2.0 * cp.log(densities/ SIGMA_THRESHOLD))
+            inv_scales_intersect = inv_scales / k[:,None]
+            inv_scales_intersect4 = cp.empty((num_prim, 4), dtype=cp.float32)
+            inv_scales_intersect4[:, :3] = inv_scales_intersect
+            inv_scales_intersect4[:,  3] = k
 
+            state.prims[:,  4: 8] = inv_scales_intersect4            # inv_inter4
+            state.prims[:,  8:12] = cp_quaternions            # quat4
+            state.prims[:, 15:16] = cp_densities            # density4
+            
             # program_grps=(state.raygen_grp, state.miss_grp, state.hit_grp)
             program_grps=state.program_grps
-            state.sbt=u_ox.create_sbt(program_grps=program_grps,positions=cp_positions,scales=cp_scales,quaternions=cp_quaternions)
+            state.sbt=u_ox.create_sbt(program_grps=program_grps)
 
             # build_bvh(state,cp_bboxes)
+            # state.bboxes=cp_bboxes
             state.gas=u_ox.create_acceleration_structure(state.ctx,cp_bboxes)
             state.params.trav_handle = state.gas.handle
 
@@ -334,11 +367,17 @@ def handle_camera_update(state):
     camera.aspect_ratio = params.width / float(params.height)
     #Make a clear copy of the camera.eye
     params.eye = camera.eye.copy()
-    params.rgb=compute_cupy_rgb(state.params.eye,params.positions,params.color_features,
-                        params.sph_gauss_features,params.bandwidth_sharpness,
-                        params.lobe_axis,params.num_sg,
-                        params.degree_sh,params.num_prim,
-                        params.max_sh_degree,params.max_sg_display)
+    pre_ctx=state.pre_ctx
+    rgb=compute_cupy_rgb(state.params.eye,pre_ctx.positions,pre_ctx.color_features,
+                        pre_ctx.sph_gauss_features,pre_ctx.bandwidth_sharpness,
+                        pre_ctx.lobe_axis,pre_ctx.num_sg,
+                        pre_ctx.degree_sh,params.num_prim,
+                        pre_ctx.max_sh_degree,pre_ctx.max_sg_display)
+    # print("Type of camera.eye:",type(camera.eye))
+    # print("Type of pre_ctx.positions:",type(pre_ctx.positions))
+    state.prims[:, :3]=cp.array(camera.eye)-pre_ctx.positions
+    state.prims[:,12:15]=rgb*state.prims[:,15:16] #Multiply by density
+
     u,v,w = camera.uvw_frame()
     params.u = u
     params.v = v
@@ -366,7 +405,6 @@ def launch_subframe(output_buffer, state):
 
     state.pipeline.launch(state.sbt, dimensions=state.launch_dimensions,
             params=state.params.handle, stream=output_buffer.stream)
-
     output_buffer.stream.synchronize()
     output_buffer.unmap()
     # if state.is_window_focused:

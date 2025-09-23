@@ -52,10 +52,10 @@ def window_size_callback(window, res_x, res_y):
 
     state.params.width = res_x
     state.params.height = res_y
-    state.params.hit_sphere_idx = cp.zeros((state.params.max_prim_slice*state.params.width*state.params.height),dtype=cp.uint32).data.ptr
+    state.hit_prim_idx = cp.zeros((state.params.max_prim_slice*state.params.width*state.params.height),dtype=cp.uint32)
+    state.params.hit_prim_idx = state.hit_prim_idx.data.ptr
     state.depth_buffer = cp.zeros((state.params.width*state.params.height),dtype=cp.float32)
     state.params.depth_buffer_ptr = state.depth_buffer.data.ptr
-    # state.params.depth_buffer = cp.zeros((state.params.width*state.params.height),dtype=cp.float32).data.ptr
     state.camera_changed = True
     state.resize_dirty = True
 
@@ -80,9 +80,9 @@ def key_callback(window, key, scancode, action, mods):
                 state.idx_train_im = max(state.idx_train_im-1,state.min_idx_train_im)
                 state.update_train_im = True
             elif state.which_item == 6:
-                state.params.degree_sh=max(state.params.degree_sh-1,0)
+                state.pre_ctx.degree_sh=max(state.pre_ctx.degree_sh-1,0)
             elif state.which_item == 11:
-                state.params.num_sg=max(state.params.num_sg-1,0)
+                state.pre_ctx.num_sg=max(state.pre_ctx.num_sg-1,0)
             elif state.which_item == 8:
                 state.added_before_iter=max(state.added_before_iter-10,0)
                 state.update_added_gaussians = True
@@ -96,9 +96,9 @@ def key_callback(window, key, scancode, action, mods):
                 state.idx_train_im = min(state.idx_train_im+1,state.max_idx_train_im)
                 state.update_train_im = True
             elif state.which_item == 6:
-                state.params.degree_sh=min(state.params.degree_sh+1,state.params.max_sh_degree)
+                state.pre_ctx.degree_sh=min(state.pre_ctx.degree_sh+1,state.pre_ctx.max_sh_degree)
             elif state.which_item == 11:
-                state.params.num_sg=min(state.params.num_sg+1,state.params.max_sg_display)
+                state.pre_ctx.num_sg=min(state.pre_ctx.num_sg+1,state.pre_ctx.max_sg_display)
             elif state.which_item == 8:
                 state.added_before_iter=min(state.added_before_iter+10,state.max_iteration)
                 state.update_added_gaussians = True

@@ -1,52 +1,40 @@
 #pragma once
-#define BUFFER_SIZE 16
-#define DT 0.005f
+#define BUFFER_SIZE 32
+#define CHUNK_SIZE 16
 #define TRANSMITTANCE_EPSILON 0.001f
 #define SIGMA_THRESHOLD 0.1f
 
-namespace sphere {
-    // const unsigned int NUM_ATTRIBUTE_VALUES = 4u;
+struct alignas(16) PrimData {
+    float4 pos4;       // positions_relative4 origin-position
+    float4 inv_inter4; // inv_scales_intersect4   inv_scale/sqrt(2.0*log(sig/sig_thresh))
+    float4 quat4;      // quaternions
+    float4 rgba4;      // rgbsigma, rgb is pre-multiplied by sigma
+  };
 
-    struct SphereHitGroupData {
-        float3* positions;
-        float3* scales;
-        float4* quaternions;
-    };
-}
-
-struct Params
+struct alignas(16) Params
 {
     unsigned int           max_prim_slice;
     unsigned int num_prim;
-    unsigned int          degree_sh;
-    unsigned int max_sh_degree;
-    unsigned int num_sg;
-    unsigned int max_sg_display;
 
     float3 bbox_min;
     float3 bbox_max;
 
-    float* densities;
-    float* rgb;
-    float* color_features;
-    
-    float* sph_gauss_features;
-    float* bandwidth_sharpness;
-    float* lobe_axis;
-    
-    float3* positions;
-    float3* scales;
-    float4* quaternions;
-    
-    int* hit_sphere_idx;
+    float dt_step;
+    unsigned int dynamic_sampling;
 
-    // unsigned int print_error_image;
-    // float* current_error_image;
+    // float* densities;
+    // float* rgb;
+    
+    // float3* positions;
+    // float3* scales;
+    // float4* quaternions;
+
+    const PrimData* __restrict__ prims;
+    
+    int* __restrict__ hit_prim_idx;
 
     uchar4*                frame_buffer;
     float* depth_buffer;
-
-    // int* number_of_gaussians_per_ray;
 
     unsigned int width;
     unsigned int height;

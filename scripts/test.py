@@ -69,7 +69,7 @@ def inference(hit_prim_idx,pointcloud,cam_list,max_prim_slice,dt_step,rnd_sample
       bb_max=bboxes[:,3:].max(axis=0)
 
       gas = u_ox.create_acceleration_structure(ctx, bboxes)
-      sbt = u_ox.create_sbt(program_grps, cp_positions,cp_scales,cp_quaternions)
+      sbt = u_ox.create_sbt(program_grps)
 
       order_sh=int(np.sqrt(pointcloud.spherical_harmonics.shape[2]+1).item()-1)
 
@@ -100,7 +100,7 @@ def inference(hit_prim_idx,pointcloud,cam_list,max_prim_slice,dt_step,rnd_sample
           bb_max=bboxes[:,3:].max(axis=0)
 
           gas = u_ox.create_acceleration_structure(ctx, bboxes)
-          sbt = u_ox.create_sbt(program_grps, cp_positions,cp_scales,cp_quaternions)
+          sbt = u_ox.create_sbt(program_grps)
 
           #Check memory is contiguous
           pointcloud.check_contiguous()
@@ -169,7 +169,7 @@ def render(pointcloud,cam_list,max_prim_slice,dt_step,rnd_sample,supersampling,w
       bb_max=bboxes[:,3:].max(axis=0)
 
       gas = u_ox.create_acceleration_structure(ctx, bboxes)
-      sbt = u_ox.create_sbt(program_grps, cp_positions,cp_scales,cp_quaternions)
+      sbt = u_ox.create_sbt(program_grps)
 
       order_sh=int(np.sqrt(pointcloud.spherical_harmonics.shape[2]+1).item()-1)
       #Check memory is contiguous

@@ -115,7 +115,7 @@ class RenderOptixFunction(torch.autograd.Function):
         u_ox.update_acceleration_structure(settings.gas, bboxes)
       else:
         settings.gas= u_ox.create_acceleration_structure(settings.context, bboxes)
-      sbt_fwd = u_ox.create_sbt(settings.program_grps_fwd, cp_positions,cp_scales,cp_quaternions)
+      sbt_fwd = u_ox.create_sbt(settings.program_grps_fwd)
       order_sh=int(np.sqrt(color_features.shape[2]).item()-1)
       
       cp_rgb=compute_cupy_rgb(settings.viewpoint_cam.camera_center,cp_positions,cp_color_features,
@@ -163,7 +163,7 @@ class RenderOptixFunction(torch.autograd.Function):
                           rgb,
                           ray_colors,
                           dloss_dray_colors)
-      sbt_bwd = u_ox.create_sbt(settings.program_grps_bwd, cp_positions,cp_scales,cp_quaternions)
+      sbt_bwd = u_ox.create_sbt(settings.program_grps_bwd)
       cp_densities_grad,cp_color_features_grad,cp_positions_grad,cp_scales_grad,cp_quaternions_grad= u_ox.launch_pipeline_backward(
                                                                             settings.pipeline_bwd, sbt_bwd, settings.gas,bb_min,bb_max, settings.dt_step,
                                                                             settings.dynamic_sampling,
