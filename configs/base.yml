@@ -34,7 +34,7 @@ pointcloud:
 training:
   checkpoint: 0
   checkpoint_folder: "output/2024-07-24_21-22-51/model"
-  max_prim_slice: 1024
+  max_prim_slice: 512
   n_iters: 30000
 
   unlock_color_features: true
