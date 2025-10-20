@@ -74,12 +74,20 @@ def train(config, quiet=True):
 
   start_time = time.time()
 
+  accum_steps = 20
+  accum_start = 20000
+  accum_counter = 0
+
   log_phase(logger, "Starting training")
   logger.info("Number of iterations: %d", config.training.n_iters)
   for iter in tqdm(range(first_iter,config.training.n_iters)):
+    use_accum = (iter >= accum_start) and (accum_steps > 1)
+    if (not use_accum) or (accum_counter == 0):
+      opt_scene.pointcloud.optim_managers.zero_grad()
+      
     # Pick a random Camera
     if not viewpoint_stack:
-        viewpoint_stack = opt_scene.getTrainCameras(config.scene.train_resolution_scales).copy()
+      viewpoint_stack = opt_scene.getTrainCameras(config.scene.train_resolution_scales).copy()
 
     viewpoint_cam = viewpoint_stack.pop(random.randint(0, len(viewpoint_stack)-1))
 
@@ -134,10 +142,9 @@ def train(config, quiet=True):
     lambda_iso = config.training.lambda_iso
     train_loss += lambda_iso*loss_iso_r
 
-    #ratio_scales = torch.clamp(torch.exp(torch.max(opt_scene.pointcloud.scales,1)[0])/torch.exp(torch.min(opt_scene.pointcloud.scales,1)[0]),min=10) - 10
-    #loss_iso = ratio_scales.mean()
-    #train_loss += 1.0*loss_iso
-
+    if use_accum:
+      train_loss = train_loss / float(accum_steps)
+    
     train_loss.backward()
     torch.cuda.synchronize()
 
@@ -145,10 +152,19 @@ def train(config, quiet=True):
       opt_scene.pointcloud.accumulate_gradient(opt_scene.pointcloud.positions.grad,viewpoint_cam)
       opt_scene.pointcloud.accumulate_gradient_gaussians_not_visible(opt_scene.pointcloud.positions.grad)
 
-    opt_scene.pointcloud.optim_managers.step()
-    opt_scene.pointcloud.optim_managers.zero_grad()
+    stepped_this_iter = False
+    if use_accum:
+      accum_counter += 1
+      if accum_counter >= accum_steps:
+        opt_scene.pointcloud.optim_managers.step()
+        opt_scene.pointcloud.optim_managers.zero_grad()
+        accum_counter = 0
+        stepped_this_iter = True
+    else:
+      opt_scene.pointcloud.optim_managers.step()
+      opt_scene.pointcloud.optim_managers.zero_grad()
 
-    if iter%1000==0 and iter>0: 
+    if stepped_this_iter and iter % 1000 == 0 and iter > 0:
       opt_scene.pointcloud.check_required_grad()
 
     if iter%100==0:
@@ -307,4 +323,4 @@ def train(config, quiet=True):
   if config.scene.eval:
     return mean_psnr_test[-1],np.mean(SSIM_list_test_scales),np.mean(LPIPS_list_test_scales),mean_time
   else:
-    return mean_psnr_train[-1]
+    return mean_psnr_train[-1],None,None,None
