@@ -93,6 +93,7 @@ Follow the steps below to set up the project:
   cd raygaussx
   conda env create --file environment_win.yml
   conda activate raygaussx
+  conda install git
   ```
 
 ---
@@ -120,6 +121,13 @@ Please download and unzip the following datasets, then place them in the `datase
 | Deep Blending + Tanks&Temples  | [download(.zip)](https://drive.google.com/file/d/1snnKl8fcksEPY24V_0YNCYWtCqdd0Elc/view?usp=sharing) |
 | Mip-NeRF 360                   | [download](https://jonbarron.info/mipnerf360/) |
 
+Datasets used for videos:
+| Dataset                        | Download Link   |
+|--------------------------------|-----------------|
+| Beryl                 | [download(.zip)](https://cloud.minesparis.psl.eu/index.php/s/HK547COP6rcoqOe) |
+| Globe                 | [download(.zip)](https://cloud.minesparis.psl.eu/index.php/s/Xs4ILsDPApsa8hP) |
+
+
 <!-- #### Trained Models
 
 If you would like to directly visualize a model trained by RayGaussX, we provide the trained point clouds for each scene in Mip-NeRF 360. In this case, you can skip the training of the scene and evaluate or visualize it directly: [Download Link](https://drive.google.com/file/d/1E0_Tg2QeMx2kyohPhfRtfV656oQFQ2Kv/view?usp=sharing). -->
@@ -134,6 +142,11 @@ If you want to **skip training** and run evaluation or visualization directly, w
 | Tanks&Temples                  | [download](https://cloud.minesparis.psl.eu/index.php/s/ukbgWSKh2aMgdbL) |
 | Mip-NeRF 360                   | [download](https://cloud.minesparis.psl.eu/index.php/s/27MuT7O0LwYW7Ta) |
 
+Datasets used for videos:
+| Dataset                        | Download Link   |
+|--------------------------------|-----------------|
+| Beryl                 | [download](https://cloud.minesparis.psl.eu/index.php/s/S6pF7LBiyZdioza) |
+| Globe                 | [download](https://cloud.minesparis.psl.eu/index.php/s/WhqkME7y6vgXs2f) |
 
 # Training and Evaluation
 To reproduce the results on entire datasets, follow the instructions below:
