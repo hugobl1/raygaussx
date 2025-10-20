@@ -31,10 +31,10 @@ We present an enhanced differentiable ray-casting algorithm for rendering Gaussi
   - 20/10/2025: Improved results with gradient accumulation over 20 images
 
 PSNR results on different datasets:
-|                |NeRF synthetic|NSVF synthetic|Mip-NeRF360|Tanks&Temple|Deep Blending|
-|----------------|--------------|--------------|--------------|--------------|--------------|
-|RayGaussX(Paper)|34.54         |38.75         |28.43         |23.76         |30.32         |
-|RayGaussX(Code) |34.65         |38.82         |28.57         |23.78         |30.64         |
+|                 |NeRF synthetic|NSVF synthetic|Mip-NeRF360|Tanks&Temple|Deep Blending|
+|-----------------|-------------|-------------|-------------|-------------|-------------|
+|RayGaussX (Paper)|    34.54    |    38.75    |    28.43    |    23.76    |    30.32    |
+|RayGaussX (Code) |    34.65    |    38.82    |    28.57    |    23.78    |    30.64    |
 
 ## Hardware Requirements
   - CUDA-ready GPU
