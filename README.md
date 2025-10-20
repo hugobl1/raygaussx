@@ -80,7 +80,7 @@ Follow the steps below to set up the project:
   ```
 
 ### Windows:
-You will need a C++ compiler like Visual Studio Community: [link](https://visualstudio.microsoft.com/fr/vs/community/)
+You will need a C++ compiler like Visual Studio Community: [link](https://visualstudio.microsoft.com/fr/vs/community/) \
 Follow the steps below to set up the project:
 
    ```bash
