@@ -79,26 +79,6 @@ _ELLIPSOID_BBOX = cp.ElementwiseKernel(
     name='ellipsoid_bbox_kernel'
 )
 
-def ellipsoids_bbox_from_quat_old(quaternions, centers, scales, densities):
-    quaternions = quaternions.astype(cp.float32, copy=False)
-    centers     = centers.astype(cp.float32, copy=False)
-    scales      = scales.astype(cp.float32, copy=False)
-    densities   = densities.astype(cp.float32, copy=False)
-
-    w, x, y, z  = quaternions[:,0], quaternions[:,1], quaternions[:,2], quaternions[:,3]
-    c0, c1, c2  = centers[:,0], centers[:,1], centers[:,2]
-    s0, s1, s2  = scales[:,0],  scales[:,1],  scales[:,2]
-
-    out = cp.empty((centers.shape[0], 6), dtype=cp.float32)
-    _ELLIPSOID_BBOX(
-        c0, c1, c2,
-        s0, s1, s2,
-        w, x, y, z,
-        densities, cp.float32(SIGMA_THRESHOLD),
-        out[:,0], out[:,1], out[:,2], out[:,3], out[:,4], out[:,5]
-    )
-    return out
-
 def ellipsoids_bbox_from_quat(quaternions, centers, scales, densities):
     # Cast + colonnes contiguës
     q = quaternions.astype(cp.float32, copy=False)
@@ -142,28 +122,7 @@ def quaternion_to_rotation(quaternion):
     L3[:,0],L3[:,1],L3[:,2]=2 * (x*z - w*y), 2 * (y*z + w*x), 1 - 2 * (x**2 + y**2)
     return L1,L2,L3
 
-def compute_spheres_bbox(centers,scales):
-    out = cp.empty((centers.shape[0], 6), dtype='f4')
-    out[:, :3] = centers - 3*scales
-    out[:, 3:] = centers + 3*scales
-    return out
-
 def compute_ellipsoids_bbox(centers,scales,L1,L2,L3,densities):
-    delta=cp.log((densities/SIGMA_THRESHOLD)**2)
-    delta[delta<0]=0
-    delta=cp.sqrt(delta)
-
-    out = cp.empty((centers.shape[0], 6), dtype='f4')
-    scales_L1 = cp.linalg.norm(delta[:,None]*scales * L1, axis=1)
-    scales_L2 = cp.linalg.norm(delta[:,None]*scales * L2, axis=1)
-    scales_L3 = cp.linalg.norm(delta[:,None]*scales * L3, axis=1)
-    #I want a Nx3 array with [L1,L2,L3] for each ellipsoid
-    out[:, :3] = centers - cp.vstack([scales_L1,scales_L2,scales_L3]).T
-    out[:, 3:] = centers + cp.vstack([scales_L1,scales_L2,scales_L3]).T
-    return out
-
-def compute_vol_bbox(centers,scales,L1,L2,L3,densities):
-
     delta=cp.log((densities/SIGMA_THRESHOLD)**2)
     delta[delta<0]=0
     delta=cp.sqrt(delta)
