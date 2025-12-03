@@ -117,7 +117,7 @@ Please download and unzip the following datasets, then place them in the `datase
 | Dataset                        | Download Link   |
 |--------------------------------|-----------------|
 | NeRF-Synthetic                 | [download(.zip)](https://drive.google.com/file/d/1a3l9OL2lRA3z490QFNoDdZuUxTWrbdtD/view?usp=sharing) |
-| NCVF-Synthetic                 | [download(.zip)](https://drive.google.com/file/d/1calWbNNuWgZJyBqJnkj8K9CK_Hvh0ccE/view?usp=sharing) |
+| NSVF-Synthetic                 | [download(.zip)](https://drive.google.com/file/d/1calWbNNuWgZJyBqJnkj8K9CK_Hvh0ccE/view?usp=sharing) |
 | Mip-NeRF 360                   | [download](https://jonbarron.info/mipnerf360/) |
 | Deep Blending + Tanks&Temples  | [download(.zip)](https://drive.google.com/file/d/1snnKl8fcksEPY24V_0YNCYWtCqdd0Elc/view?usp=sharing) |
 
