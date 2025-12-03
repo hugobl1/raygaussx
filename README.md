@@ -183,7 +183,7 @@ This will start the training and evaluation on the NeRF-Synthetic dataset with t
 
 ---
 
-### Synthetic-NSVF Dataset
+### NSVF-Synthetic Dataset
 1. **Prepare the Dataset**: Ensure the Synthetic-NSVF dataset is downloaded and placed in the `dataset` directory.
 
 2. **Run Training Script**: Execute the following command:
