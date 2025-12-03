@@ -116,10 +116,10 @@ Please download and unzip the following datasets, then place them in the `datase
 
 | Dataset                        | Download Link   |
 |--------------------------------|-----------------|
-| Synthetic-NSVF                 | [download(.zip)](https://drive.google.com/file/d/1calWbNNuWgZJyBqJnkj8K9CK_Hvh0ccE/view?usp=sharing) |
 | Synthetic-NeRF                 | [download(.zip)](https://drive.google.com/file/d/1a3l9OL2lRA3z490QFNoDdZuUxTWrbdtD/view?usp=sharing) |
-| Deep Blending + Tanks&Temples  | [download(.zip)](https://drive.google.com/file/d/1snnKl8fcksEPY24V_0YNCYWtCqdd0Elc/view?usp=sharing) |
+| Synthetic-NSVF                 | [download(.zip)](https://drive.google.com/file/d/1calWbNNuWgZJyBqJnkj8K9CK_Hvh0ccE/view?usp=sharing) |
 | Mip-NeRF 360                   | [download](https://jonbarron.info/mipnerf360/) |
+| Deep Blending + Tanks&Temples  | [download(.zip)](https://drive.google.com/file/d/1snnKl8fcksEPY24V_0YNCYWtCqdd0Elc/view?usp=sharing) |
 
 Datasets used for videos:
 | Dataset                        | Download Link   |
@@ -136,11 +136,11 @@ If you would like to directly visualize a model trained by RayGaussX, we provide
 If you want to **skip training** and run evaluation or visualization directly, we provide pretrained checkpoints for every scene in each dataset:
 | Dataset                        | Download Link   |
 |--------------------------------|-----------------|
-| Synthetic-NSVF                 | [download](https://cloud.minesparis.psl.eu/index.php/s/dLMtUQaVBYfaPLU) |
-| Synthetic-NeRF                 | [download](https://cloud.minesparis.psl.eu/index.php/s/5J7RZ0dXCK2J1AN) |
-| Deep Blending                  | [download](https://cloud.minesparis.psl.eu/index.php/s/bNy2nh2CKPzEVUW) |
-| Tanks&Temples                  | [download](https://cloud.minesparis.psl.eu/index.php/s/ukbgWSKh2aMgdbL) |
-| Mip-NeRF 360                   | [download](https://cloud.minesparis.psl.eu/index.php/s/27MuT7O0LwYW7Ta) |
+| Synthetic-NeRF                 | [download](https://cloud.minesparis.psl.eu/index.php/s/6OEwQxuxjKjc961) |
+| Synthetic-NSVF                 | [download](https://cloud.minesparis.psl.eu/index.php/s/GzEP3G9GviSNe7l) |
+| Mip-NeRF 360                   | [download](https://cloud.minesparis.psl.eu/index.php/s/2x0F0LfekdebfTM) |
+| Tanks&Temples                  | [download](https://cloud.minesparis.psl.eu/index.php/s/iAOW9UI9B8bBfaf) |
+| Deep Blending                  | [download](https://cloud.minesparis.psl.eu/index.php/s/ztvCmU8ondtGhA7) |
 
 Datasets used for videos:
 | Dataset                        | Download Link   |
