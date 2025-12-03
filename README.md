@@ -142,7 +142,7 @@ If you want to **skip training** and run evaluation or visualization directly, w
 | Tanks&Temples                  | [download](https://cloud.minesparis.psl.eu/index.php/s/iAOW9UI9B8bBfaf) |
 | Deep Blending                  | [download](https://cloud.minesparis.psl.eu/index.php/s/ztvCmU8ondtGhA7) |
 
-Datasets used for videos:
+Models used for videos:
 | Dataset                        | Download Link   |
 |--------------------------------|-----------------|
 | Beryl                 | [download](https://cloud.minesparis.psl.eu/index.php/s/S6pF7LBiyZdioza) |
