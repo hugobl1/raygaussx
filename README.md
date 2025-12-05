@@ -28,6 +28,7 @@ We present an enhanced differentiable ray-casting algorithm for rendering Gaussi
 <br>
 
 ## Update
+  - 28/10/2025: C++ implementation of the RayGaussX rendering method: <a href="https://github.com/zouiqad/raygaussplus">github repo</a>
   - 20/10/2025: Improved results with gradient accumulation over 20 images
 
 PSNR results on different datasets:
